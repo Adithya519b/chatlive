@@ -1,97 +1,173 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Ably Real-Time Chat</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ably Chat with Emoji & Username</title>
   <script src="https://cdn.ably.io/lib/ably.min-1.js"></script>
   <style>
-    body { font-family: Arial; margin: 4px;
-     }
-    #chat { border: 1px solid #ccc; 
-      padding: 10px; 
-      height: 90vh;
-      width: 90vw; 
-      overflow-y: scroll; 
-      margin-bottom: 1px; }
-      @media screen and(max-width:500px){
-        #chat{
-          height: 80%;
-          width: 100%;
-        }
-        
+    body {
+      font-family: Arial, sans-serif;
+      margin: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    .themediv {
+      margin-bottom: 10px;
+    }
+
+    #chat {
+      border: 1px solid #ccc;
+      padding: 10px;
+      height: 60vh;
+      width: 100%;
+      max-width: 500px;
+      overflow-y: auto;
+      background-color: #f9f9f9;
+      margin-bottom: 10px;
+    }
+
+    #input-area {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 500px;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    #username, #message {
+      flex: 1 1 100%;
+      padding: 8px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 5px;
+    }
+
+    #emoji-picker {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .emoji {
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    #send {
+      padding: 10px 15px;
+      font-size: 16px;
+      background-color: blue;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      flex: 1;
+    }
+
+    .theme {
+      background-color: orange;
+      color: white;
+      padding: 5px 15px;
+      border-radius: 20px;
+      border: none;
+      font-size: 14px;
+    }
+
+    @media screen and (max-width: 500px) {
+      #chat {
+        height: 55vh;
       }
-    #message { width: 60%; }
-    #send { padding: 5px 5px; 
-      width: 20%;
-    background-color: blue;
-  color:white;
-border-radius: 15px;
-  outline: none;
-}
-.theme{
-  background-color: orange;
-  color: white;
-  padding:0px 10px;
-  border-radius: 20px;
 
-}
-
-    
-    
+      #send {
+        font-size: 14px;
+        padding: 10px;
+      }
+    }
   </style>
 </head>
 <body>
 
   <h2>💬 Chat-Room</h2>
+
   <div class="themediv">
-    <button class="theme" value="night" onclick="themechng()">night</button>
-    
+    <button class="theme" value="night" onclick="themechng()">Night</button>
   </div>
 
-  <div id="chat">
+  <div id="chat"></div>
 
-  <input type="text" id="message" placeholder="Type a message..." />
-  <button id="send">>></button>
+  <div id="input-area">
+    <input type="text" id="username" placeholder="Your name" />
+    <input type="text" id="message" placeholder="Type a message..." />
+    
+    <div id="emoji-picker">
+      <span class="emoji">😀</span>
+      <span class="emoji">😂</span>
+      <span class="emoji">😎</span>
+      <span class="emoji">❤️</span>
+      <span class="emoji">👍</span>
+      <span class="emoji">🚀</span>
+    </div>
+    
+    <button id="send">Send</button>
   </div>
 
   <script>
-    // 🔑 Replace with your actual Ably API key
-    const ably = new Ably.Realtime('8mM_tw.XjUlrQ:nDmQs1MXjVs07kzQrN4BtckMY91jdOWYxMXsRDFgT04'); 
-
-    // Use a channel (create one if doesn't exist)
+    const ably = new Ably.Realtime('8mM_tw.XjUlrQ:nDmQs1MXjVs07kzQrN4BtckMY91jdOWYxMXsRDFgT04');
     const channel = ably.channels.get('chat-room');
 
-    // Elements
     const chat = document.getElementById('chat');
     const messageInput = document.getElementById('message');
     const sendBtn = document.getElementById('send');
+    const themeBtn = document.querySelector('.theme');
+    const usernameInput = document.getElementById('username');
+    const emojis = document.querySelectorAll('.emoji');
 
-    // Send message
     sendBtn.onclick = () => {
       const text = messageInput.value.trim();
+      const username = usernameInput.value.trim() || "Anonymous";
+
       if (text !== "") {
-        channel.publish('message', text);
+        const messageData = `${username}: ${text}`;
+        channel.publish('message', messageData);
         messageInput.value = "";
       }
     };
 
-    // Receive messages
     channel.subscribe('message', (msg) => {
       const p = document.createElement('p');
       p.textContent = msg.data;
-      
       chat.appendChild(p);
       chat.scrollTop = chat.scrollHeight;
     });
-    console.log(ably)
-    let theme=document.querySelector(".theme");
-    function themechng(){
-      if(theme.value=="night"){
-        chat.style.backgroundColor="black";
-        chat.style.color="white";
+
+    function themechng() {
+      if (themeBtn.value === "night") {
+        chat.style.backgroundColor = "black";
+        chat.style.color = "white";
+        themeBtn.textContent = "Day";
+        themeBtn.value = "day";
+      } else {
+        chat.style.backgroundColor = "#f9f9f9";
+        chat.style.color = "black";
+        themeBtn.textContent = "Night";
+        themeBtn.value = "night";
       }
-      
     }
+
+    emojis.forEach(emoji => {
+      emoji.addEventListener('click', () => {
+        messageInput.value += emoji.textContent;
+        messageInput.focus();
+      });
+    });
   </script>
 
 </body>
