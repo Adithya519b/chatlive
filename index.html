@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ably Real-Time Chat</title>
+  <script src="https://cdn.ably.io/lib/ably.min-1.js"></script>
+  <style>
+    body { font-family: Arial; margin: 4px;
+     }
+    #chat { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; margin-bottom: 1px; }
+    #message { width: 60%; }
+    #send { padding: 5px 5px; 
+      width: 20%;
+    background-color: blue;
+  color:white;
+border-radius: 15px;
+  outline: none;
+}
+.theme{
+  background-color: orange;
+  color: white;
+  padding:0px 10px;
+  border-radius: 20px;
+
+}
+
+    
+    
+  </style>
+</head>
+<body>
+
+  <h2>💬 Chat-Room</h2>
+  <div class="themediv">
+    <button class="theme" value="night" onclick="themechng()">night</button>
+    
+  </div>
+
+  <div id="chat"></div>
+<div class="input">
+  <input type="text" id="message" placeholder="Type a message..." />
+  <button id="send">>></button>
+  </div>
+
+  <script>
+    // 🔑 Replace with your actual Ably API key
+    const ably = new Ably.Realtime('8mM_tw.XjUlrQ:nDmQs1MXjVs07kzQrN4BtckMY91jdOWYxMXsRDFgT04'); 
+
+    // Use a channel (create one if doesn't exist)
+    const channel = ably.channels.get('chat-room');
+
+    // Elements
+    const chat = document.getElementById('chat');
+    const messageInput = document.getElementById('message');
+    const sendBtn = document.getElementById('send');
+
+    // Send message
+    sendBtn.onclick = () => {
+      const text = messageInput.value.trim();
+      if (text !== "") {
+        channel.publish('message', text);
+        messageInput.value = "";
+      }
+    };
+
+    // Receive messages
+    channel.subscribe('message', (msg) => {
+      const p = document.createElement('p');
+      p.textContent = msg.data;
+      
+      chat.appendChild(p);
+      chat.scrollTop = chat.scrollHeight;
+    });
+    console.log(ably)
+    let theme=document.querySelector(".theme");
+    function themechng(){
+      if(theme.value=="night"){
+        chat.style.backgroundColor="black";
+        chat.style.color="white";
+      }
+      
+    }
+  </script>
+
+</body>
+</html>
